@@ -13,7 +13,7 @@ Windows 桌面悬浮窗，只读展示 LLM 网关的上游余额与包月额度�
 ## 与 llm-gateway 的关系
 
 - gw-quota 是**独立客户端**，不是 [llm-gateway](https://github.com/inertias-1900/llm-gateway) 的子项目，不含它的代码，也不随它分发；两者各自独立选择许可证。
-- 它调用的是 llm-gateway 中的只读接口 `GET /api/upstream/quota`（鉴权为 `Authorization: Bearer <key>`），读取返回 JSON 里的上游余额与包月用量。接口路径与数据结构由网关定义，客户端只做展示。
+- 它调用的是 llm-gateway 中的只读接口 `GET /api/upstream/quota`（鉴权方式：请求头 Authorization 携带这把只读 key），读取返回 JSON 里的上游余额与包月用量。接口路径与数据结构由网关定义，客户端只做展示。
 - 网关侧需要为它准备一把 key。如果所用网关版本支持只读作用域（`keys[].scope = "quota"`），建议用这种 key：按该作用域校验时，它能读模型清单与额度，不能对话或生成。**该字段并非所有版本都有**，以所用网关的配置文档为准；不支持时可用普通 key，此时只读约束来自客户端本身（只发一个 GET），而不是服务端。
 - 只要能暴露相同路径与 JSON 结构的其他网关实现，也可以对接；程序不绑定某个域名。
 
@@ -108,7 +108,7 @@ It does not proxy requests, change configuration, or write anything remotely. It
 ## Relationship to llm-gateway
 
 - gw-quota is an **independent client**, not a subproject of [llm-gateway](https://github.com/inertias-1900/llm-gateway). It contains none of that project's code, is not distributed with it, and the two choose their licenses independently.
-- It calls the read-only endpoint `GET /api/upstream/quota` in llm-gateway (authenticated with `Authorization: Bearer <key>`) and renders the balances and monthly usage found in the JSON response. The path and schema are defined by the gateway; the client only displays them.
+- It calls the read-only endpoint `GET /api/upstream/quota` in llm-gateway (authenticated with the Authorization header carrying the read-only key) and renders the balances and monthly usage found in the JSON response. The path and schema are defined by the gateway; the client only displays them.
 - The gateway needs a key for this client. If the gateway version supports a read-only scope (`keys[].scope = "quota"`), prefer it: with server-side enforcement such a key can list models and read quotas but cannot chat or generate. **Not every version has this field**; check your gateway's configuration docs. Without it, a regular key still works, but the read-only guarantee then comes from the client (it only issues a GET), not from the server.
 - Any other gateway implementation exposing the same path and JSON shape also works. The program is not bound to a specific domain.
 
